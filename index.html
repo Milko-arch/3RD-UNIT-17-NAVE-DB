@@ -344,7 +344,7 @@
     <main id="game-container" class="flex-grow pt-24 pb-32 px-4 transition-all duration-500 opacity-0 flex flex-col">
         
         <!-- MISSION MAP -->
-        <section id="map-section" class="max-w-md mx-auto relative h-[80vh] w-full flex flex-col items-center justify-around">
+        <section id="map-section" class="max-w-md mx-auto relative h-[85vh] w-full flex flex-col items-center justify-around">
             <div class="absolute inset-0 flex justify-center -z-10">
                 <svg width="100" height="100%" class="opacity-20">
                     <line x1="50" y1="0" x2="50" y2="100%" stroke="indigo" stroke-width="8" stroke-dasharray="15" class="map-path" />
@@ -364,6 +364,12 @@
             <button id="node-phrases" onclick="startMission('phrases')" class="relative group opacity-50 grayscale pointer-events-none">
                 <div class="w-20 h-20 rounded-full bg-white border-8 border-purple-400 flex items-center justify-center text-3xl shadow-2xl group-hover:scale-110 transition-transform">🪐</div>
                 <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-4 py-1 rounded-full font-bold text-[10px] whitespace-nowrap uppercase">Mission 3</div>
+            </button>
+
+            <!-- Misión 4: Significados (Unit 16) -->
+            <button id="node-meanings" onclick="startMission('meanings')" class="relative group opacity-50 grayscale pointer-events-none">
+                <div class="w-20 h-20 rounded-full bg-white border-8 border-yellow-400 flex items-center justify-center text-3xl shadow-2xl group-hover:scale-110 transition-transform">📝</div>
+                <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-yellow-600 text-white px-4 py-1 rounded-full font-bold text-[10px] whitespace-nowrap uppercase">Mission 4</div>
             </button>
 
             <button id="node-quiz" onclick="startMission('quiz')" class="relative group opacity-50 grayscale pointer-events-none">
@@ -403,8 +409,29 @@
             <div id="phrases-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             <div class="mt-12 flex justify-center">
                 <button onclick="finishPhrases()" class="px-12 py-5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-3xl font-bold-game text-2xl btn-bounce shadow-xl">
-                    I'M READY FOR THE CASTLE! 🚀
+                    I'M READY FOR MISSION 4! 🚀
                 </button>
+            </div>
+        </section>
+
+        <!-- MISSION 4: MEANINGS (SIGNIFICADOS) -->
+        <section id="meanings-section" class="hidden max-w-2xl mx-auto w-full">
+            <div class="glass p-10 text-center relative overflow-hidden">
+                <div class="mb-4 text-indigo-600 font-bold uppercase text-xs" id="meanings-progress-text">Definition 1/7</div>
+                <h2 class="text-2xl font-bold-game text-indigo-600 uppercase mb-4">Word Meanings Quest 📝</h2>
+                
+                <div class="bg-indigo-50 p-6 rounded-3xl border-4 border-dashed border-indigo-200 mb-8 min-h-[100px] flex items-center justify-center">
+                    <p id="meanings-definition" class="text-lg md:text-xl text-slate-700 font-medium leading-relaxed"></p>
+                </div>
+                
+                <div id="meanings-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                
+                <div class="mt-12 h-6 w-full bg-slate-100 rounded-full border-2 border-white overflow-hidden shadow-inner">
+                    <div id="meanings-progress-bar" class="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-700 ease-out" style="width: 0%"></div>
+                </div>
+                <p class="mt-2 text-xs font-bold text-slate-400 uppercase tracking-widest">Progress to Final Castle</p>
+                
+                <div id="robot-anchor-meanings"></div>
             </div>
         </section>
 
@@ -453,7 +480,6 @@
             } catch(e) {}
         }
 
-        // Se mantiene la función tal cual estaba definida originalmente
         function playUFOSuccessSound() {
             try {
                 if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -461,7 +487,6 @@
                 
                 const now = audioCtx.currentTime;
                 
-                // Sirenas / Motores ascendentes
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -477,7 +502,6 @@
                 osc.start(now);
                 osc.stop(now + 2.5);
 
-                // Modulación LFO
                 const lfo = audioCtx.createOscillator();
                 const lfoGain = audioCtx.createGain();
                 lfo.frequency.value = 15;
@@ -491,7 +515,6 @@
             } catch(e) {}
         }
 
-        // Se mantiene la función tal cual estaba definida originalmente
         function playUFOCrashSound() {
             try {
                 if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -499,7 +522,6 @@
                 
                 const now = audioCtx.currentTime;
                 
-                // Motor fallando cayendo en tono
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -515,7 +537,6 @@
                 osc.start(now);
                 osc.stop(now + 1.5);
                 
-                // Beeps distorsionados de alarma
                 for(let i=0; i<6; i++) {
                     const t = now + (i * 0.25);
                     const glitchOsc = audioCtx.createOscillator();
@@ -533,7 +554,6 @@
                     glitchOsc.stop(t + 0.15);
                 }
 
-                // Explosión al colisionar
                 setTimeout(() => {
                     const noiseNode = audioCtx.createBufferSource();
                     const bufferSize = audioCtx.sampleRate * 1.5;
@@ -563,7 +583,6 @@
             } catch(e) {}
         }
 
-        // Se mantiene la función tal cual estaba definida originalmente
         function runUFOAnimation(isSuccess) {
             const existing = document.getElementById('ufo-anim-container');
             if (existing) existing.remove();
@@ -590,7 +609,6 @@
                 ufo.style.animation = 'ufoFlySuccess 3s cubic-bezier(0.25, 1, 0.5, 1) forwards';
                 container.appendChild(ufo);
                 
-                // Creación de estrellas cósmicas de estela
                 const trailInterval = setInterval(() => {
                     const rect = ufo.getBoundingClientRect();
                     if (rect.top < -50 || rect.left > window.innerWidth + 50) {
@@ -619,7 +637,6 @@
                 ufo.style.animation = 'ufoCrashErratic 1.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards';
                 container.appendChild(ufo);
 
-                // Explosión al llegar al centro
                 setTimeout(() => {
                     document.body.classList.add('animate-shake');
                     setTimeout(() => document.body.classList.remove('animate-shake'), 1000);
@@ -637,7 +654,6 @@
 
                     ufo.style.display = 'none';
 
-                    // Humo y fuego
                     for (let i = 0; i < 20; i++) {
                         const smoke = document.createElement('div');
                         smoke.innerText = Math.random() > 0.5 ? '🔥' : '💨';
@@ -666,7 +682,6 @@
             }
         }
 
-        // Se mantiene la función tal cual estaba definida originalmente
         function triggerHaptic(type = 'click') {
             if (!navigator.vibrate) return;
             try {
@@ -725,7 +740,6 @@
             setTimeout(() => el.remove(), 1500);
         }
 
-        // Muestra combo feedback
         function showComboFeedback(streak) {
             const el = document.createElement('div');
             el.className = 'fixed top-[20%] left-1/2 -translate-x-1/2 font-bold-game text-6xl text-orange-500 z-[9999] pointer-events-none animate__animated animate__tada';
@@ -739,7 +753,7 @@
             }, 1500);
         }
 
-        // Nueva lista de vocabulario estructurada y mapeada con iconos infantiles
+        // Lista de vocabulario original
         const originalVocabulary = [
             { word: 'SPOON', icon: '🥄' },
             { word: 'WOOD', icon: '🪵' },
@@ -761,7 +775,17 @@
             { word: 'JEWEL', icon: '💎' }
         ];
 
-        // Nuevas oraciones de ejemplo y asociaciones de emojis adaptadas
+        // Misión 4 Vocabulario: Unit 16 (Relacionar Definiciones)
+        const mission4Vocabulary = [
+            { word: 'FAIR', icon: '🎡', definition: 'A showing of farm and home products, often together with entertainment.' },
+            { word: 'STARE', icon: '👀', definition: 'To look with a steady, often wide-eyed gaze.' },
+            { word: 'SHARE', icon: '🍕', definition: 'To have, use, or do together with another or others.' },
+            { word: 'HAIR', icon: '💇', definition: 'A covering of fine, thin strands that grow from the skin.' },
+            { word: 'CHAIR', icon: '🪑', definition: 'A piece of furniture made for sitting on.' },
+            { word: 'STAIRS', icon: '🪜', definition: 'A series of flight of steps.' },
+            { word: 'PEAR', icon: '🍐', definition: 'A yellow or brown fruit that has a round bottom and is narrow at the top.' }
+        ];
+
         const phrasesData = [
             { phrase: "🥄 Use a silver <span class='highlight-word'>SPOON</span> to eat your soup.", word: "SPOON", emojiPhrase: "🥄 🥣 😋" },
             { phrase: "🪵 We use dry <span class='highlight-word'>WOOD</span> to make a warm campfire.", word: "WOOD", emojiPhrase: "🪵 🔥 ⛺" },
@@ -775,7 +799,6 @@
             { phrase: "🦖 Remember to <span class='highlight-word'>CHEW</span> your food carefully before swallowing.", word: "CHEW", emojiPhrase: "🦖 🥦 🍽️" },
             { phrase: "🦷 I lost a baby <span class='highlight-word'>TOOTH</span> and put it under my pillow.", word: "TOOTH", emojiPhrase: "🦷 🪥 🧝" },
             { phrase: "🤝 He <span class='highlight-word'>SHOOK</span> hands with his new classmate.", word: "SHOOK", emojiPhrase: "🤝 👦 👧" },
-            { phrase: "👟 Tie the laces of your left <span class='highlight-word'>SHOE</span>.", word: "SHOE", emojiPhrase: "👟 🏁 running" }, // actual running emoji: 🏃
             { phrase: "👟 Tie the laces of your left <span class='highlight-word'>SHOE</span>.", word: "SHOE", emojiPhrase: "👟 🏁 🏃" },
             { phrase: "📦 We need to <span class='highlight-word'>MOVE</span> these heavy boxes to the truck.", word: "MOVE", emojiPhrase: "📦 🚚 🏠" },
             { phrase: "🌬️ The strong wind <span class='highlight-word'>BLEW</span> the dry autumn leaves away.", word: "BLEW", emojiPhrase: "🌬️ 🍃 🍂" },
@@ -792,11 +815,13 @@
             currentSection: 'map',
             spellingIdx: 0,
             spellingErrors: 0,
+            meaningsIdx: 0,
             quizIdx: 0,
             quizCorrect: 0,
             quizStreak: 0,
             isAutoPlaying: false,
-            currentVocab: [...originalVocabulary],
+            // Combina ambos vocabularios para el Quiz Final del Castillo
+            currentVocab: [...originalVocabulary, ...mission4Vocabulary],
             unlockedLevels: ['learn'],
             finalScore: 0,
             learnedWords: new Set(),
@@ -822,7 +847,6 @@
             }
             state.studentName = inputName;
             
-            // Colocamos el nombre de usuario al lado del icono de la casa
             const hudUsername = document.getElementById('hud-username');
             if (hudUsername) {
                 hudUsername.innerText = inputName;
@@ -890,6 +914,14 @@
                 state.spellingIdx = 0; 
                 state.spellingErrors = 0;
                 renderSpelling(); 
+            } else if(id === 'meanings') {
+                document.getElementById('robot-anchor-meanings').appendChild(robot);
+                robot.classList.remove('robot-default-pos');
+                robot.classList.add('robot-spelling-pos');
+                state.meaningsIdx = 0;
+                // Anuncio inicial sin mencionar palabras de respuesta
+                updateSpeech("Listen to the definition and choose the correct word!");
+                setTimeout(renderMeanings, 3000);
             } else {
                 document.body.appendChild(robot);
                 robot.classList.remove('robot-spelling-pos');
@@ -942,7 +974,6 @@
             state.isAutoPlaying = false;
         }
 
-        // Clic para aprender vocabulario
         function learnClick(el, word) {
             playWord(word);
             createSparkles(el);
@@ -1048,7 +1079,6 @@
             }
         }
 
-        // Muestra la pista mostrando temporalmente la letra
         function showSpellingHint() {
             const word = originalVocabulary[state.spellingIdx].word.toUpperCase();
             const slots = document.getElementById('spelling-slots').children;
@@ -1107,24 +1137,109 @@
         }
 
         function finishPhrases() {
-            if(!state.unlockedLevels.includes('quiz')) {
-                state.unlockedLevels.push('quiz');
-                const node = document.getElementById('node-quiz');
+            if(!state.unlockedLevels.includes('meanings')) {
+                state.unlockedLevels.push('meanings');
+                const node = document.getElementById('node-meanings');
                 node.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
                 node.classList.add('animate__animated', 'animate__rubberBand');
             }
-            updateSpeech("Let's enter the Final Castle!");
+            updateSpeech("Awesome! Let's match the word definitions!");
             triggerHaptic('success');
-            setTimeout(() => startMission('quiz'), 1500);
+            setTimeout(() => startMission('meanings'), 1500);
         }
 
+        // LÓGICA DE LA MISIÓN 4: SIGNIFICADOS (MEANINGS QUEST)
+        function renderMeanings() {
+            const progress = (state.meaningsIdx / mission4Vocabulary.length) * 100;
+            const bar = document.getElementById('meanings-progress-bar');
+            if(bar) bar.style.width = `${progress}%`;
+            
+            const txt = document.getElementById('meanings-progress-text');
+            if(txt) txt.innerText = `Definition ${state.meaningsIdx + 1}/${mission4Vocabulary.length}`;
+
+            // Si se completaron todas las definiciones
+            if (state.meaningsIdx >= mission4Vocabulary.length) {
+                if(!state.unlockedLevels.includes('quiz')) {
+                    state.unlockedLevels.push('quiz');
+                    const node = document.getElementById('node-quiz');
+                    node.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
+                    node.classList.add('animate__animated', 'animate__bounceIn');
+                }
+                updateSpeech("Excellent! You unlocked the Final Castle Quiz!");
+                triggerHaptic('success');
+                setTimeout(() => startMission('quiz'), 2000);
+                return;
+            }
+
+            const current = mission4Vocabulary[state.meaningsIdx];
+            document.getElementById('meanings-definition').innerText = current.definition;
+            
+            // Generar opciones: 1 correcta y 3 incorrectas
+            let options = [current.word];
+            const pool = [...originalVocabulary, ...mission4Vocabulary].filter(v => v.word !== current.word);
+            while(options.length < 4) {
+                const rnd = pool[Math.floor(Math.random() * pool.length)].word;
+                if(!options.includes(rnd)) options.push(rnd);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById('meanings-options');
+            optionsContainer.innerHTML = options.map(opt => {
+                const wordObj = [...originalVocabulary, ...mission4Vocabulary].find(w => w.word === opt);
+                return `
+                    <button onclick="checkMeaningAnswer('${opt}', this)" class="glass p-6 text-2xl font-bold-game text-indigo-700 btn-bounce uppercase flex items-center justify-center gap-3">
+                        <span class="text-3xl">${wordObj ? wordObj.icon : '❓'}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            }).join('');
+            
+            // Solo lee la definición en voz alta, sin decir ni mencionar la palabra secreta.
+            speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(current.definition);
+            utter.lang = 'en-US';
+            utter.rate = 0.85;
+            speechSynthesis.speak(utter);
+        }
+
+        function checkMeaningAnswer(answer, btn) {
+            const current = mission4Vocabulary[state.meaningsIdx];
+            const allBtns = btn.parentElement.querySelectorAll('button');
+            allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+            if(answer === current.word) {
+                btn.classList.add('bg-green-400', 'text-white', 'border-green-500');
+                confetti({ particleCount: 15 });
+                showFloatingFeedback(); 
+                updateStars(2);
+                state.meaningsIdx++;
+                setTimeout(renderMeanings, 1200);
+            } else {
+                // Al equivocarse, añade retroalimentación visual errónea y pasa automáticamente a la siguiente palabra
+                triggerHaptic('error');
+                btn.classList.add('bg-red-400', 'text-white', 'border-red-500', 'animate__animated', 'animate__shakeX');
+                
+                // Muestra brevemente la correcta para que el niño aprenda de su error
+                allBtns.forEach(b => {
+                    const btnText = b.querySelector('span:last-child').innerText;
+                    if(btnText === current.word) {
+                        b.classList.add('bg-green-200', 'border-green-400');
+                    }
+                });
+
+                state.meaningsIdx++;
+                setTimeout(renderMeanings, 1800);
+            }
+        }
+
+        // CONTROL DEL QUIZ FINAL
         function renderQuiz() {
             const card = document.getElementById('quiz-card');
             if(state.quizIdx >= state.currentVocab.length) { finishQuiz(); return; }
             
             const current = state.currentVocab[state.quizIdx];
             let options = [current.word];
-            const others = originalVocabulary.filter(v => v.word !== current.word);
+            const others = [...originalVocabulary, ...mission4Vocabulary].filter(v => v.word !== current.word);
             while(options.length < 4) {
                 const rnd = others[Math.floor(Math.random() * others.length)].word;
                 if(!options.includes(rnd)) options.push(rnd);
@@ -1138,7 +1253,7 @@
 
             card.innerHTML = `
                 ${comboHTML}
-                <div class="mb-4 text-indigo-600 font-bold uppercase text-xs">Question ${state.quizIdx + 1}/${originalVocabulary.length}</div>
+                <div class="mb-4 text-indigo-600 font-bold uppercase text-xs">Question ${state.quizIdx + 1}/${state.currentVocab.length}</div>
                 <div class="text-9xl mb-4 animate__animated animate__zoomIn">${current.icon}</div>
                 <button onclick="playWord('${current.word}')" class="w-14 h-14 mx-auto mb-8 bg-white border-2 border-indigo-200 rounded-full flex items-center justify-center text-xl shadow-md btn-bounce hover:bg-indigo-50 transition-colors">🔊</button>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1188,7 +1303,7 @@
         }
 
         function finishQuiz() {
-            state.finalScore = Math.round((state.quizCorrect / originalVocabulary.length) * 100);
+            state.finalScore = Math.round((state.quizCorrect / state.currentVocab.length) * 100);
             const card = document.getElementById('quiz-card');
             saveResultsToExcel(state.finalScore);
 
@@ -1207,7 +1322,6 @@
                 confetti({ particleCount: 200, spread: 160, origin: { y: 0.6 } });
             } else {
                 triggerHaptic('error');
-                // Sacar volando y estrellar el platillo volador en caso de fallar
                 runUFOAnimation(false);
                 card.innerHTML = `
                     <h2 class="text-5xl font-bold-game text-red-500 mb-6">RETRY NEEDED!</h2>
@@ -1219,26 +1333,23 @@
             }
         }
 
-        // Se mantiene la función para retornar a la pantalla de revisión
         function goToReview() {
             state.learnedWords.clear();
             startMission('learn');
         }
 
         function restartGameQuest() {
-            state.quizIdx = 0; state.quizCorrect = 0; state.spellingIdx = 0; state.quizStreak = 0;
+            state.quizIdx = 0; state.quizCorrect = 0; state.spellingIdx = 0; state.meaningsIdx = 0; state.quizStreak = 0;
             showSection('map');
         }
 
-        // DIBUJA UNA ESTRELLA DORADA DE CONFETI DE FORMA MANUAL EN EL PDF
         function drawCuteStar(doc, cx, cy, r) {
-            doc.setFillColor(251, 191, 36); // Color Dorado Brillante / Amber
+            doc.setFillColor(251, 191, 36); 
             doc.triangle(cx, cy - r, cx - r/2, cy, cx + r/2, cy, 'F');
             doc.triangle(cx, cy + r, cx - r/2, cy, cx + r/2, cy, 'F');
         }
 
         function generateCertificate(score, name) {
-            // Animación exitosa del platillo volador después de emitir el diploma
             runUFOAnimation(true);
 
             const { jsPDF } = window.jspdf;
@@ -1246,26 +1357,22 @@
             const w = doc.internal.pageSize.getWidth();
             const h = doc.internal.pageSize.getHeight();
             
-            // 1. Fondo Cálido y Divertido (Crema Pastel)
             doc.setFillColor(255, 251, 235);
             doc.rect(0, 0, w, h, 'F');
             
-            // 2. Doble Borde Redondeado para Niños (Indigo y Rosa)
-            doc.setDrawColor(99, 102, 241); // Indigo
+            doc.setDrawColor(99, 102, 241); 
             doc.setLineWidth(4);
             doc.roundedRect(8, 8, w - 16, h - 16, 8, 8, 'D');
 
-            doc.setDrawColor(244, 63, 94); // Rosa / Rose
+            doc.setDrawColor(244, 63, 94); 
             doc.setLineWidth(1.5);
             doc.roundedRect(12, 12, w - 24, h - 24, 6, 6, 'D');
 
-            // 3. Estrellas Doradas en las Esquinas
             drawCuteStar(doc, 22, 22, 7);
             drawCuteStar(doc, w - 22, 22, 7);
             drawCuteStar(doc, 22, h - 22, 7);
             drawCuteStar(doc, w - 22, h - 22, 7);
 
-            // 4. Confeti de Colores Distribuidos Aleatoriamente
             const confettiColors = [[96, 165, 250], [244, 114, 182], [52, 211, 153], [251, 191, 36]];
             const confettiPoints = [
                 {x: 35, y: 35, r: 2.5}, {x: w - 35, y: 35, r: 3},
@@ -1279,7 +1386,6 @@
                 doc.circle(p.x, p.y, p.r, 'F');
             });
 
-            // 5. Encabezado en Banner de Héroe (Índigo con bordes suaves)
             doc.setFillColor(99, 102, 241);
             doc.roundedRect(w/2 - 95, 20, 190, 15, 4, 4, 'F');
             
@@ -1288,29 +1394,24 @@
             doc.setFontSize(24);
             doc.text("SUPER WORD QUEST HERO", w/2, 30.5, { align: 'center' });
             
-            // 6. Subtítulo de la Academia (Rosa)
             doc.setTextColor(244, 63, 94);
             doc.setFontSize(13);
             doc.setFont("helvetica", "bold");
             doc.text("FOOTPRINTS ENGLISH ACADEMY", w/2, 45, { align: 'center' });
             
-            // 7. Texto de Certificación para el Alumno
             doc.setTextColor(71, 85, 105);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(12.5);
             doc.text("This awesome diploma is proudly presented to", w/2, 57, { align: 'center' });
             
-            // 8. Nombre del Estudiante Gigante y Colorido
-            doc.setTextColor(79, 70, 229); // Royal Indigo
+            doc.setTextColor(79, 70, 229); 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(36);
             doc.text(name, w/2, 72, { align: 'center' });
             
-            // Línea decorativa debajo del nombre
-            doc.setFillColor(244, 114, 182); // Rosa Claro
+            doc.setFillColor(244, 114, 182); 
             doc.rect(w/2 - 50, 75.5, 100, 1.2, 'F');
             
-            // 9. Descripción del Logro
             doc.setTextColor(71, 85, 105);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(12.5);
@@ -1320,69 +1421,61 @@
             doc.setTextColor(15, 23, 42);
             doc.text("THIRD GRADE • UNIT 16 ACADEMY CHALLENGE", w/2, 92, { align: 'center' });
             
-            // 10. Panel de Palabras Superadas (Caja Azul Pastel Ordenada)
-            doc.setFillColor(239, 246, 255); // Azul Suave
-            doc.roundedRect(25, 101, w - 50, 34, 4, 4, 'F');
-            doc.setDrawColor(191, 219, 254); // Borde Azul
+            doc.setFillColor(239, 246, 255); 
+            doc.roundedRect(15, 101, w - 30, 34, 4, 4, 'F');
+            doc.setDrawColor(191, 219, 254); 
             doc.setLineWidth(1);
-            doc.roundedRect(25, 101, w - 50, 34, 4, 4, 'D');
+            doc.roundedRect(15, 101, w - 30, 34, 4, 4, 'D');
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10.5);
             doc.setTextColor(30, 41, 59);
-            doc.text("⭐ 18 AMAZING ENGLISH WORDS MASTERED ⭐", w/2, 107.5, { align: 'center' });
+            doc.text("⭐ 25 AMAZING ENGLISH WORDS MASTERED ⭐", w/2, 107.5, { align: 'center' });
 
-            const wordsList = originalVocabulary.map(v => v.word).join("   •   ");
+            const wordsList = [...originalVocabulary, ...mission4Vocabulary].map(v => v.word).join("   •   ");
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(9.5);
+            doc.setFontSize(8);
             doc.setTextColor(79, 70, 229);
             
-            // Dividir las palabras automáticamente para ajustarse al recuadro
-            const splitWords = doc.splitTextToSize(wordsList, w - 65);
-            doc.text(splitWords, w/2, 115.5, { align: 'center' });
+            const splitWords = doc.splitTextToSize(wordsList, w - 45);
+            doc.text(splitWords, w/2, 114.5, { align: 'center' });
 
-            // 11. Sello Dorado de Excelencia
             const sealX = 60;
             const sealY = 166;
             
-            // Cintas Rosas de la Medalla
             doc.setFillColor(244, 63, 94);
             doc.triangle(sealX - 7, sealY + 11, sealX - 13, sealY + 28, sealX - 2, sealY + 26, 'F');
             doc.triangle(sealX + 7, sealY + 11, sealX + 2, sealY + 26, sealX + 13, sealY + 28, 'F');
 
-            // Círculos Dorados del Sello
-            doc.setFillColor(217, 119, 6); // Oro Oscuro
+            doc.setFillColor(217, 119, 6); 
             doc.circle(sealX, sealY, 17, 'F');
-            doc.setFillColor(251, 191, 36); // Oro Brillante
+            doc.setFillColor(251, 191, 36); 
             doc.circle(sealX, sealY, 14.5, 'F');
 
-            // Texto dentro del Sello Dorado
             doc.setTextColor(120, 53, 4);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8.5);
             doc.text("EXPLORER", sealX, sealY - 1, { align: 'center' });
             doc.text("AWARD", sealX, sealY + 2.5, { align: 'center' });
 
-            // 12. Burbuja de Puntuación Estilo Comic
             const scoreX = 237;
             const scoreY = 166;
 
-            doc.setFillColor(245, 243, 255); // Fondo Morado Claro
+            doc.setFillColor(245, 243, 255); 
             doc.roundedRect(scoreX - 32, scoreY - 14, 64, 25, 5, 5, 'F');
-            doc.setDrawColor(167, 139, 250); // Borde Violeta
+            doc.setDrawColor(167, 139, 250); 
             doc.setLineWidth(1.5);
             doc.roundedRect(scoreX - 32, scoreY - 14, 64, 25, 5, 5, 'D');
 
-            doc.setTextColor(109, 40, 217); // Violeta Oscuro
+            doc.setTextColor(109, 40, 217); 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.text("STREAK SCORE", scoreX, scoreY - 4, { align: 'center' });
             
             doc.setFontSize(21);
-            doc.setTextColor(244, 63, 94); // Rosa Intenso
+            doc.setTextColor(244, 63, 94); 
             doc.text(`${score}%`, scoreX, scoreY + 5.5, { align: 'center' });
             
-            // Guardar el PDF con el nombre del alumno
             doc.save(`Diploma_${name}.pdf`);
         }
 
@@ -1426,6 +1519,7 @@
             confetti({ particleCount: 50, spread: 70, origin: { y: 0.5 } });
             if (state.currentSection === 'map') {
                 if (state.unlockedLevels.includes('quiz')) startMission('quiz');
+                else if (state.unlockedLevels.includes('meanings')) startMission('meanings');
                 else if (state.unlockedLevels.includes('phrases')) startMission('phrases');
                 else if (state.unlockedLevels.includes('spelling')) startMission('spelling');
                 else startMission('learn');
@@ -1442,6 +1536,10 @@
                 phrasesData.forEach(p => state.readPhrases.add(p.word));
                 state.stars += phrasesData.length * 2;
                 finishPhrases();
+            } else if (state.currentSection === 'meanings') {
+                state.meaningsIdx = mission4Vocabulary.length;
+                if (!state.unlockedLevels.includes('quiz')) state.unlockedLevels.push('quiz');
+                renderMeanings();
             } else if (state.currentSection === 'quiz') {
                 state.quizIdx = state.currentVocab.length;
                 state.quizCorrect = state.currentVocab.length;
