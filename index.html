@@ -261,6 +261,30 @@
             30%, 50%, 70% { transform: translate3d(-10px, 0, 0); }
             40%, 60% { transform: translate3d(10px, 0, 0); }
         }
+
+        /* Estilos del OVNI Flotante y Combustible */
+        @keyframes floatUfo {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+        .ufo-float {
+            animation: floatUfo 3s ease-in-out infinite;
+        }
+        .fuel-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .fuel-shine::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shineFuel 2s infinite;
+        }
+        @keyframes shineFuel {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -293,15 +317,47 @@
         </div>
     </div>
 
-    <!-- NEXT MISSION MODAL -->
-    <div id="next-mission-modal" class="fixed inset-0 z-[200] modal-overlay flex items-center justify-center p-6 hidden">
-        <div class="glass max-w-md w-full p-8 text-center animate__animated animate__bounceIn">
-            <div class="text-6xl mb-4">🌟</div>
-            <h3 class="text-3xl font-bold-game text-indigo-600 mb-2">EXCELLENT WORK!</h3>
-            <p class="text-slate-600 mb-8 font-medium">You have reviewed all the words.</p>
-            <div class="flex flex-col gap-4">
-                <button id="stay-here-btn" onclick="handleContinueHere()" class="w-full py-4 bg-slate-200 text-slate-700 rounded-2xl font-bold-game text-lg btn-bounce">STAY HERE</button>
-                <button onclick="goToSpellingFromModal()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold-game text-lg btn-bounce">GO TO MISSION 2 🕵️</button>
+    <!-- UFO FUEL PROGRESS MODAL -->
+    <div id="ufo-fuel-modal" class="fixed inset-0 z-[210] modal-overlay flex items-center justify-center p-6 hidden">
+        <div class="glass max-w-md w-full p-8 text-center animate__animated animate__bounceIn flex flex-col items-center gap-4">
+            <!-- OVNI Flotante -->
+            <div class="ufo-float text-8xl filter drop-shadow-[0_10px_15px_rgba(99,102,241,0.5)] mb-2">🛸</div>
+            
+            <h3 class="text-3xl font-bold-game text-indigo-600 uppercase">UFO Engine Power</h3>
+            
+            <!-- Contenedor Tanque de Combustible -->
+            <div class="w-full bg-slate-900 rounded-3xl p-5 border-4 border-slate-700 shadow-inner relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-black text-slate-400 tracking-wider uppercase">Fuel Level</span>
+                    <span id="ufo-fuel-text" class="text-xl font-bold-game text-yellow-400">1/4</span>
+                </div>
+                <!-- Barra del tanque -->
+                <div class="h-8 w-full bg-slate-950 rounded-xl p-1 border border-slate-800 overflow-hidden relative flex">
+                    <!-- Divisiones del Tanque -->
+                    <div class="absolute left-1/4 top-0 bottom-0 w-0.5 bg-slate-800/80 z-10"></div>
+                    <div class="absolute left-2/4 top-0 bottom-0 w-0.5 bg-slate-800/80 z-10"></div>
+                    <div class="absolute left-3/4 top-0 bottom-0 w-0.5 bg-slate-800/80 z-10"></div>
+                    
+                    <!-- Relleno de Combustible -->
+                    <div id="ufo-fuel-progress-bar" class="h-full bg-gradient-to-r from-pink-500 via-indigo-500 to-green-400 rounded-lg transition-all duration-1000 ease-out fuel-shine shadow-[0_0_10px_rgba(99,102,241,0.8)]" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <!-- Globo de texto del Robot seleccionado -->
+            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 w-full relative mt-2 text-center shadow-md">
+                <p id="ufo-robot-talk" class="text-indigo-900 font-bold-game text-lg uppercase">Well done, keep it up!</p>
+                <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-indigo-50 border-b-2 border-r-2 border-indigo-200 rotate-45"></div>
+            </div>
+
+            <!-- Avatar del Robot Sincronizado en el Modal -->
+            <div id="ufo-avatar-container" class="w-24 h-24 bg-white/90 rounded-full border-4 border-white flex items-center justify-center overflow-hidden shadow-xl robot-container mt-1">
+                <img id="ufo-modal-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Leo" class="w-full h-full" alt="Avatar">
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex gap-4 w-full mt-4">
+                <button id="ufo-stay-btn" onclick="handleUfoStay()" class="flex-1 py-4 bg-slate-200 text-slate-700 rounded-2xl font-bold-game text-sm btn-bounce uppercase">Stay Here</button>
+                <button id="ufo-go-btn" onclick="handleUfoNext()" class="flex-[1.5] py-4 bg-indigo-600 text-white rounded-2xl font-bold-game text-sm btn-bounce uppercase shadow-lg shadow-indigo-200">Go to Mission 2 🚀</button>
             </div>
         </div>
     </div>
@@ -826,7 +882,8 @@
             finalScore: 0,
             learnedWords: new Set(),
             readPhrases: new Set(),
-            wrongQuizWords: new Set()
+            wrongQuizWords: new Set(),
+            currentUfoLevel: 1
         };
 
         function selectPower(color, name) {
@@ -834,6 +891,7 @@
             state.heroName = name;
             document.documentElement.style.setProperty('--p-color', color === 'blue' ? '#6366f1' : '#ec4899');
             document.getElementById('hud-avatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
+            document.getElementById('ufo-modal-avatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
             document.getElementById('name-modal').classList.remove('hidden');
         }
 
@@ -869,6 +927,17 @@
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'en-US';
             const avatarContainer = document.getElementById('leo-avatar-container');
+            utter.onstart = () => avatarContainer.classList.add('is-talking');
+            utter.onend = () => avatarContainer.classList.remove('is-talking');
+            speechSynthesis.speak(utter);
+        }
+
+        /* Reproduce voz para el Robot dentro del Modal OVNI */
+        function updateSpeechUfo(text) {
+            document.getElementById('ufo-robot-talk').innerText = text;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'en-US';
+            const avatarContainer = document.getElementById('ufo-avatar-container');
             utter.onstart = () => avatarContainer.classList.add('is-talking');
             utter.onend = () => avatarContainer.classList.remove('is-talking');
             speechSynthesis.speak(utter);
@@ -919,7 +988,6 @@
                 robot.classList.remove('robot-default-pos');
                 robot.classList.add('robot-spelling-pos');
                 state.meaningsIdx = 0;
-                // Anuncio inicial sin mencionar palabras de respuesta
                 updateSpeech("Listen to the definition and choose the correct word!");
                 setTimeout(renderMeanings, 3000);
             } else {
@@ -993,30 +1061,89 @@
                     node.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
                     node.classList.add('animate__animated', 'animate__rubberBand');
                 }
-                setTimeout(showNextMissionModal, 1200);
+                setTimeout(() => showUfoFuelModal(1), 1200);
             }
         }
 
-        function showNextMissionModal() {
-            document.getElementById('next-mission-modal').classList.remove('hidden');
+        /* LÓGICA DE APARICIÓN DEL OVNI Y CONTROL DEL TANQUE DE GASOLINA */
+        function showUfoFuelModal(level) {
+            state.currentUfoLevel = level;
+            const modal = document.getElementById('ufo-fuel-modal');
+            const fuelText = document.getElementById('ufo-fuel-text');
+            const fuelBar = document.getElementById('ufo-fuel-progress-bar');
+            const stayBtn = document.getElementById('ufo-stay-btn');
+            const goBtn = document.getElementById('ufo-go-btn');
+            
+            modal.classList.remove('hidden');
             triggerHaptic('success');
+
+            if(level === 1) {
+                fuelText.innerText = "1/4";
+                fuelBar.style.width = "25%";
+                stayBtn.classList.remove('hidden');
+                goBtn.innerText = "GO TO MISSION 2 🛸";
+                
+                setTimeout(() => {
+                    updateSpeechUfo("Well done, keep it up!");
+                }, 400);
+            } else if(level === 2) {
+                fuelText.innerText = "2/4";
+                fuelBar.style.width = "50%";
+                stayBtn.classList.add('hidden'); // Solo continuar en las siguientes fases
+                goBtn.innerText = "GO TO MISSION 3 🪐";
+                
+                setTimeout(() => {
+                    updateSpeechUfo("Well done, keep it up!");
+                }, 400);
+            } else if(level === 3) {
+                fuelText.innerText = "3/4";
+                fuelBar.style.width = "75%";
+                stayBtn.classList.add('hidden');
+                goBtn.innerText = "GO TO MISSION 4 📝";
+                
+                setTimeout(() => {
+                    updateSpeechUfo("Well done, keep it up!");
+                }, 400);
+            }
         }
 
-        function closeNextMissionModal() {
-            document.getElementById('next-mission-modal').classList.add('hidden');
-        }
-
-        function handleContinueHere() {
+        function handleUfoStay() {
+            document.getElementById('ufo-fuel-modal').classList.add('hidden');
+            speechSynthesis.cancel();
             state.learnedWords.clear();
             if (state.currentSection === 'learn') {
                 renderLearn();
             }
-            closeNextMissionModal();
             updateSpeech("Ready to practice again!");
         }
 
+        function handleUfoNext() {
+            document.getElementById('ufo-fuel-modal').classList.add('hidden');
+            speechSynthesis.cancel();
+            if(state.currentUfoLevel === 1) {
+                startMission('spelling');
+            } else if(state.currentUfoLevel === 2) {
+                startMission('phrases');
+            } else if(state.currentUfoLevel === 3) {
+                startMission('meanings');
+            }
+        }
+
+        function showNextMissionModal() {
+            // Reemplazado por el modal del OVNI interactivo
+            showUfoFuelModal(1);
+        }
+
+        function closeNextMissionModal() {
+            document.getElementById('ufo-fuel-modal').classList.add('hidden');
+        }
+
+        function handleContinueHere() {
+            handleUfoStay();
+        }
+
         function goToSpellingFromModal() {
-            closeNextMissionModal();
+            document.getElementById('ufo-fuel-modal').classList.add('hidden');
             startMission('spelling');
         }
 
@@ -1033,9 +1160,7 @@
                     node.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
                     node.classList.add('animate__animated', 'animate__bounceIn');
                 }
-                updateSpeech("Great job! Let's learn sentences.");
-                triggerHaptic('success');
-                setTimeout(() => startMission('phrases'), 2000);
+                setTimeout(() => showUfoFuelModal(2), 1000);
                 return;
             }
 
@@ -1143,9 +1268,7 @@
                 node.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
                 node.classList.add('animate__animated', 'animate__rubberBand');
             }
-            updateSpeech("Awesome! Let's match the word definitions!");
-            triggerHaptic('success');
-            setTimeout(() => startMission('meanings'), 1500);
+            setTimeout(() => showUfoFuelModal(3), 500);
         }
 
         // LÓGICA DE LA MISIÓN 4: SIGNIFICADOS (MEANINGS QUEST)
@@ -1157,7 +1280,6 @@
             const txt = document.getElementById('meanings-progress-text');
             if(txt) txt.innerText = `Definition ${state.meaningsIdx + 1}/${mission4Vocabulary.length}`;
 
-            // Si se completaron todas las definiciones
             if (state.meaningsIdx >= mission4Vocabulary.length) {
                 if(!state.unlockedLevels.includes('quiz')) {
                     state.unlockedLevels.push('quiz');
@@ -1174,7 +1296,6 @@
             const current = mission4Vocabulary[state.meaningsIdx];
             document.getElementById('meanings-definition').innerText = current.definition;
             
-            // Generar opciones: 1 correcta y 3 incorrectas
             let options = [current.word];
             const pool = [...originalVocabulary, ...mission4Vocabulary].filter(v => v.word !== current.word);
             while(options.length < 4) {
@@ -1194,7 +1315,6 @@
                 `;
             }).join('');
             
-            // Solo lee la definición en voz alta, sin decir ni mencionar la palabra secreta.
             speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(current.definition);
             utter.lang = 'en-US';
@@ -1215,11 +1335,9 @@
                 state.meaningsIdx++;
                 setTimeout(renderMeanings, 1200);
             } else {
-                // Al equivocarse, añade retroalimentación visual errónea y pasa automáticamente a la siguiente palabra
                 triggerHaptic('error');
                 btn.classList.add('bg-red-400', 'text-white', 'border-red-500', 'animate__animated', 'animate__shakeX');
                 
-                // Muestra brevemente la correcta para que el niño aprenda de su error
                 allBtns.forEach(b => {
                     const btnText = b.querySelector('span:last-child').innerText;
                     if(btnText === current.word) {
