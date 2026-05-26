@@ -377,7 +377,7 @@
         <div class="max-w-xl w-full text-center py-10 flex-grow flex flex-col justify-center">
             <div class="mb-4 animate__animated animate__fadeInDown">
                 <h1 class="text-7xl font-bold-game tracking-wider choco-title uppercase">Footprints</h1>
-                <p class="text-3xl font-game choco-subtitle mt-2 uppercase tracking-widest">THIRD GRADE UNIT 16</p>
+                <p class="text-3xl font-game choco-subtitle mt-2 uppercase tracking-widest">THIRD GRADE UNIT 17</p>
                 <p class="text-lg font-game opacity-50 mt-1 uppercase text-lime-200/70">Academy Adventure</p>
             </div>
             
@@ -422,7 +422,7 @@
                 <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-4 py-1 rounded-full font-bold text-[10px] whitespace-nowrap uppercase">Mission 3</div>
             </button>
 
-            <!-- Misión 4: Significados (Unit 16) -->
+            <!-- Misión 4: Significados (Unit 17) -->
             <button id="node-meanings" onclick="startMission('meanings')" class="relative group opacity-50 grayscale pointer-events-none">
                 <div class="w-20 h-20 rounded-full bg-white border-8 border-yellow-400 flex items-center justify-center text-3xl shadow-2xl group-hover:scale-110 transition-transform">📝</div>
                 <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-yellow-600 text-white px-4 py-1 rounded-full font-bold text-[10px] whitespace-nowrap uppercase">Mission 4</div>
@@ -831,7 +831,7 @@
             { word: 'JEWEL', icon: '💎' }
         ];
 
-        // Misión 4 Vocabulario: Unit 16 (Relacionar Definiciones)
+        // Misión 4 Vocabulario: Unit 17 (Relacionar Definiciones)
         const mission4Vocabulary = [
             { word: 'FAIR', icon: '🎡', definition: 'A showing of farm and home products, often together with entertainment.' },
             { word: 'STARE', icon: '👀', definition: 'To look with a steady, often wide-eyed gaze.' },
@@ -1407,7 +1407,7 @@
         function saveResultsToExcel(scorePercentage) {
             const data = {
                 name: state.studentName,
-                grade: "3RD UNIT 16",
+                grade: "3RD UNIT 17",
                 testResult: scorePercentage + "%",
                 date: new Date().toLocaleString()
             };
@@ -1537,7 +1537,7 @@
             
             doc.setFont("helvetica", "bold");
             doc.setTextColor(15, 23, 42);
-            doc.text("THIRD GRADE • UNIT 16 ACADEMY CHALLENGE", w/2, 92, { align: 'center' });
+            doc.text("THIRD GRADE • UNIT 17 ACADEMY CHALLENGE", w/2, 92, { align: 'center' });
             
             doc.setFillColor(239, 246, 255); 
             doc.roundedRect(15, 101, w - 30, 34, 4, 4, 'F');
